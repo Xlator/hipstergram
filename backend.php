@@ -66,7 +66,6 @@ class Tweet {
         $this->imageUrl = $in->url;
         $this->profileUsername = $tw->from_user;
         $this->profileImageUrl = $tw->profile_image_url;
-        var_dump($this);
         $this->store();
     }
 
@@ -82,7 +81,6 @@ class Tweet {
 }
 
 $since_id = Database::executeQuery("SELECT value FROM settings WHERE key='last_tweet_id'", array(), true);
-var_dump($since_id['value']);
 $params = array(
     "q" => "-RT #food filter:links",
     "include_entities" => "true",
@@ -94,14 +92,15 @@ $request = http_build_query($params);
 $url = "http://search.twitter.com/search.json?".$request;
 $tweets = json_decode(file_get_contents("http://search.twitter.com/search.json?".$request));
 
-var_dump(count($tweets->results));
-
 Database::executeNonQuery("UPDATE settings SET value=:maxid WHERE key='last_tweet_id'", array("maxid" => $tweets->max_id_str));
 
 foreach($tweets->results as $tweet) {
     foreach($tweet->entities->urls as $url)
         if(strstr($url->expanded_url, "instagr.am")) {
-            $insta = json_decode(file_get_contents("http://api.instagram.com/oembed?url=".urlencode($url->expanded_url."?size=t")));
+            $insta = json_decode(file_get_contents("http://api.instagram.com/oembed?url=".$url->expanded_url."?size=t"));
             $tweet_objs[] = new Tweet($tweet, $insta);
         }
 }
+
+header("Content-Type: application/json");
+print json_encode(Database::executeQuery("SELECT * FROM tweets ORDER BY id DESC LIMIT 20"));
