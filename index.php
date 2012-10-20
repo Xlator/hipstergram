@@ -1,6 +1,6 @@
 <?php 
 function __autoload($class) {
-   require sprintf("%s.php", $class);
+   require sprintf("%s.php", strtolower($class));
 }
 
 if(substr($_SERVER['REDIRECT_URL'], -4) == "json")
