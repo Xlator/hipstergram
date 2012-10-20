@@ -6,6 +6,13 @@
     <script type=text/x-jquery-tmpl></script>
     <script src=hipstergram.js></script>
     <style>
+        h1 {
+            margin-left: 2%;
+            margin-top: 1%;
+        }
+        body {
+            font-family: "Helvetica Neue";
+        }
         li img {
             width: 100px;
         }
@@ -17,6 +24,7 @@
         ul {
             width: 60%;
             float: left;
+            margin-top: 0;
         }
         li {
             float:left;
@@ -35,13 +43,22 @@
             height: 50%;
         }
         p {
-            background: green;
             max-width: 460px;
             font-size: 2em;
-            font-family: "Helvetica Neue";
+            padding: 3px;
+        }
+        strong {
+            display: block;
+            margin-top: 1em;
+            margin-left: -2%;
+            font-size: 3em;
+            text-align: center;
+            color: #666;
         }
     </style>
 </head>
     <ul></ul>
-    <div></div>
+    <div>
+        <strong>Click a thumbnail to display the image here</strong>
+    </div>
 <body>
