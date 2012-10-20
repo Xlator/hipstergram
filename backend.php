@@ -97,7 +97,7 @@ Database::executeNonQuery("UPDATE settings SET value=:maxid WHERE key='last_twee
 foreach($tweets->results as $tweet) {
     foreach($tweet->entities->urls as $url)
         if(strstr($url->expanded_url, "instagr.am")) {
-            $insta = json_decode(file_get_contents("http://api.instagram.com/oembed?url=".$url->expanded_url."?size=t"));
+            $insta = json_decode(file_get_contents("http://api.instagram.com/oembed?url=".$url->expanded_url));
             $tweet_objs[] = new Tweet($tweet, $insta);
         }
 }
