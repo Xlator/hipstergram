@@ -13,7 +13,8 @@ URLS:
 + / - The frontend
 + /recent.json - JSON feed of the last 20 images saved to the database.
 + /all.json - JSON feed of every image in the database
-+ /tweet.json?tweet=<id> - The full tweet for image <id>
++ /tweet.json?tweet=*id* - The full tweet for image *id*
++ /query - Queries Twitter/Instagram and saves results to the database (?debug to show results)
 
 FILES:
 + index.php - Router
