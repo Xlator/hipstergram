@@ -25,3 +25,9 @@ FILES:
 + pics.html - Frontend example application
 + hipstergram.js - Example javascript
 + db/hipstergram.db.dist - Database template (copied to db/hipstergram.db on first request)
+
+Requirements
+------------
++ PHP >= 5.3
++ PDO
++ sqlite3
