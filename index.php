@@ -12,14 +12,14 @@ if(substr($_SERVER['REDIRECT_URL'], -4) == "json")
 
 switch(substr($_SERVER['REDIRECT_URL'], 1)) { 
     case "all.json":
-        print json_encode(Tweet::getAll());
+        print json_encode(Tweet::getAll(), JSON_PRETTY_PRINT);
         break;
 
     case "recent.json":
         if(isset($_GET['last']))
             $tweets = Tweet::getRecent(0, $_GET['last']);
         else
-            $tweets = Tweet::getRecent(20);
+            $tweets = Tweet::getRecent(20, JSON_PRETTY_PRINT);
         print json_encode($tweets);
         break;
     case "tweet.json":

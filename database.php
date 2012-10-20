@@ -63,6 +63,7 @@ class Database {
 
         if($flags === 2) 
             return $result[0][0];
+
         return $result[0];
 
     }

@@ -9,6 +9,7 @@ loadSettings = function() {
         url: "settings.json",
         success: function(r) {
             $('body').prepend($('<h1/>', { text: r.tags }));
+            $('title').text($('title').text() + " " + r.tags + " ::");
         }
     });
 }
@@ -77,4 +78,4 @@ showTweet = function(tweet) {
 }
 
 loadSettings();
-getRecent(true);
+getRecent();
