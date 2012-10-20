@@ -1,106 +1,35 @@
-<?php 
+<?php
 
-class Database {
-    public static function getConnection() {
-        // Create the database if it doesn't exist
-        if(!file_exists('db/hipstergram.db')) {
-            copy('db/hipstergram.db.dist', 'db/hipstergram.db');
-            chmod('db/hipstergram.db', 0700);
-        }
-            $dbh = new PDO("sqlite:db/hipstergram.db");
-            $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $dbh;
-    }
-
-    static function executeNonQuery($query, $parameters = array()) {
-        $dbh = self::getConnection();
-        $result = self::getResult($dbh, $query, $parameters);
-        return $result;
-    } 
-
-    private static function getResult($dbh, $query, $parameters) {
-        $sth = $dbh->prepare($query); 
-        $sth->execute($parameters);
-        return $dbh->lastInsertId();
-    }
-
-    static function executeQuery($query, $parameters = array(), $singlerow = false) {
-        $dbh = self::getConnection();
-        $sth = $dbh->prepare($query);
-
-        if(!empty($parameters)) {
-            foreach($parameters as $k => $v) {
-                $datatype = 2;
-
-                if(is_int($v))
-                    $datatype = PDO::PARAM_INT;
-                else if(is_string($v))
-                    $datatype = PDO::PARAM_TR;
-
-                $sth->bindParam(':'.$k, $parameter[$k], $datatype);
-            }
-        }
-
-        $sth->execute();
-            $sth->setFetchMode(PDO::FETCH_ASSOC);
-
-        if(!$singlerow)
-            return $sth->fetchAll();
-
-        @$result = $sth->fetchAll();
-
-        if(count($result) == 0)
-            return false;
-
-        return $result[0];
-    }
+if(!function_exists("__autoload")) {
+    die("http://".$_SERVER['HTTP_HOST']."/query");
 }
-
-class Tweet {
-    public $text;
-    public $imageUrl;
-    public $profileUsername;
-    public $profileImageUrl;
-    function __construct($tw, $in) {
-        $this->text = $tw->text;
-        $this->imageUrl = $in->url;
-        $this->profileUsername = $tw->from_user;
-        $this->profileImageUrl = $tw->profile_image_url;
-        $this->store();
-    }
-
-    private function store() {
-        $query = "INSERT INTO tweets (text, imageUrl, profileUsername, profileImageUrl) VALUES(:text, :img, :user, :userimg)";
-        Database::executeNonQuery($query, array(
-            "text" => $this->text, 
-            "img" => $this->imageUrl, 
-            "user" => $this->profileUsername, 
-            "userimg" => $this->profileImageUrl)
-        );
-    }
-}
-
-$since_id = Database::executeQuery("SELECT value FROM settings WHERE key='last_tweet_id'", array(), true);
+$settings = json_decode(file_get_contents("settings.json"));
+$query =  "-RT filter:links ";
+$query .= str_replace(" ", " OR ", $settings->tags);
 $params = array(
-    "q" => "-RT #food filter:links",
+    "q" => $query,
+    "rpp" => $settings->tweets,
     "include_entities" => "true",
-    "rpp" => 100,
-    "since_id" => $since_id['value'],
 );
 
-$request = http_build_query($params);
-$url = "http://search.twitter.com/search.json?".$request;
-$tweets = json_decode(file_get_contents("http://search.twitter.com/search.json?".$request));
-
-Database::executeNonQuery("UPDATE settings SET value=:maxid WHERE key='last_tweet_id'", array("maxid" => $tweets->max_id_str));
-
-foreach($tweets->results as $tweet) {
-    foreach($tweet->entities->urls as $url)
-        if(strstr($url->expanded_url, "instagr.am")) {
-            $insta = json_decode(file_get_contents("http://api.instagram.com/oembed?url=".$url->expanded_url));
-            $tweet_objs[] = new Tweet($tweet, $insta);
-        }
+$t = new TwitterQuery($params);
+if(!$t->run()) {
+    /* header("Content-Type: application/json", true, 500); */
+    header(':', true, 500);
+    die(json_encode("Query error"));
 }
 
-header("Content-Type: application/json");
-print json_encode(Database::executeQuery("SELECT * FROM tweets ORDER BY id DESC LIMIT 20"));
+foreach($t->tweets as $tweet) {
+    new Tweet($tweet);
+}
+
+// Update the last tweet ID
+if(!isset($_GET['debug'])) {
+    $t->saveLastId();
+    header(':', true, 200);
+    die(json_encode("Ok"));
+}
+
+// Show the tweets if $_GET['debug'] is set
+ini_set("html_errors", 1);
+die(var_dump($t));
