@@ -6,13 +6,19 @@ class TwitterQuery {
     public $tweets;
 
     function __construct($params) {
+        
+        // Grab the ID of the last tweet from the DB
         $lastid_query = "SELECT value FROM settings WHERE key='last_tweet_id'";
         $params['since_id'] = Database::executeQuery($lastid_query, array(), Database::SCALAR);
+
+        // Build query string
         $this->request = http_build_query($params);
     }    
     
     function run() {
         $url = sprintf("http://search.twitter.com/search.json?%s", $this->request);
+
+        // Query Twitter, return false if query fails
         if($result = file_get_contents($url)) {
             $result = json_decode($result);
             $this->last_tweet_id = $result->max_id_str;
@@ -30,7 +36,7 @@ class TwitterQuery {
             if(!empty($urls)) { 
                $this->tweets[$key]->instagram = array_map("Instagram::parseUrl", $urls);
             }
-            else
+            else // Delete non-Instagram tweets
                 unset($this->tweets[$key]);    
         }
     }
@@ -38,14 +44,13 @@ class TwitterQuery {
     private function checkUrl($tweet) {
         $urls = $tweet->entities->urls;
         $valid = array();
+
         foreach($urls as $url) {
             if(preg_match('#^http://instagr[am\.com|\.am]#', $url->expanded_url))
                 $valid[] = $url->expanded_url;
         }
         return $valid;
     }
-
-    /* private function */
 
     public function saveLastId() {
         Database::executeNonQuery("UPDATE settings SET value=:id WHERE key='last_tweet_id'", array("id" => $this->last_tweet_id));

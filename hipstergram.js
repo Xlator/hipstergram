@@ -31,12 +31,20 @@ getRecent = function() {
                 window.lastPicId = r[0].id;
                 console.log('Adding '+r.length+' images');
                 $.each(r, function(k, v) {
-                    row = $('<li>', { html: "<img src="+v.imageUrl+" class=grayscale />", data: { id: v.id } });
-                    row.on('click', getTweet);
-                    if(length == 0)
-                        $('ul').append(row);
-                    else
-                        $('ul').prepend(row);
+                    row = $('<li/>', { data: { id: v.id } });
+                    $('<img/>', { src: v.imageUrl, class: "grayscale"})
+                    .load(function() {
+                        console.log($(this));
+                        row.on('click', getTweet);
+                        if(length == 0)
+                            $('ul').append(
+                                $('<li/>', { data: { id: v.id } }).append($(this).fadeIn()).on('click', getTweet)
+                            );
+                        else
+                            $('ul').prepend(
+                                $('<li/>', { data: { id: v.id } }).append($(this).fadeIn(500)).on('click', getTweet)
+                            );
+                    });
                 });
             }
             queryTwitter();
