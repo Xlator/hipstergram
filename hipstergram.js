@@ -30,6 +30,7 @@ getRecent = function() {
                 var length = $('ul').find('li').length;
                 window.lastPicId = r[0].id;
                 console.log('Adding '+r.length+' images');
+
                 $.each(r, function(k, v) {
                     row = $('<li/>', { data: { id: v.id } });
                     $('<img/>', { src: v.imageUrl, class: "grayscale"})
@@ -41,6 +42,7 @@ getRecent = function() {
                                 $('<li/>', { data: { id: v.id } }).append($(this).fadeIn()).on('click', getTweet)
                             );
                         else
+                            $('li:gt(70)').remove();
                             $('ul').prepend(
                                 $('<li/>', { data: { id: v.id } }).append($(this).fadeIn(500)).on('click', getTweet)
                             );
